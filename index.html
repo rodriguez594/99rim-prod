@@ -59,6 +59,10 @@
           <button type="button" class="chip" data-sort="abc" data-t="sort.abc">A–Å</button>
           <button type="button" class="chip" data-sort="ai" data-t="sort.ai" hidden>AI</button>
         </div></div>
+        <div class="frow"><span class="flabel" data-t="find.showLabel">Vis</span><div class="switches">
+          <label class="switch"><input type="checkbox" role="switch" id="opt-names"><span class="track" aria-hidden="true"></span><span data-t="find.names">Navne</span></label>
+          <label class="switch"><input type="checkbox" role="switch" id="opt-same"><span class="track" aria-hidden="true"></span><span data-t="find.same">Samme ord</span></label>
+        </div></div>
       </div>
       <div id="results" class="results" aria-live="polite"></div>
       <button class="ghost more" id="more" type="button" hidden data-t="find.more">Vis flere</button>
@@ -106,7 +110,6 @@
           <input type="radio" name="rl" id="rl-da" value="da" checked><label for="rl-da">Dansk</label>
           <input type="radio" name="rl" id="rl-en" value="en" disabled><label for="rl-en" class="off">English <small data-t="set.soon">snart</small></label>
         </div>
-        <label class="check"><input type="checkbox" id="opt-same"><span data-t="set.same">Vis sammensatte ord med samme slutning (fx "sommerhus" til "hus")</span></label>
       </section>
       <section class="sec">
         <h3 class="sec-title" data-t="set.about">Om 99RIM</h3>

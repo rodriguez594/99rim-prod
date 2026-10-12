@@ -57,7 +57,7 @@
 
   // ---------- Saved state (this device only) ----------
   const KEY = "99rim";
-  const state = Object.assign({ tab: "find", ui: "da", same: false, recent: [], saved: [], pad: "" }, (() => {
+  const state = Object.assign({ tab: "find", ui: "da", same: false, names: false, recent: [], saved: [], pad: "" }, (() => {
     try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { return {}; }
   })());
   let saveT = null;
@@ -87,7 +87,7 @@
       "book.rhymeLast": "Rim på sidste ord", "book.saved": "Gemte ord", "book.empty": "Tryk på et rim og vælg \"Gem i noter\" for at gemme det her.",
       "book.savedAt": "Gemt", "book.remove": "Fjern",
       "set.title": "Indstillinger", "set.ui": "Sprog i appen", "set.rhymes": "Rim", "set.soon": "snart",
-      "set.same": "Vis sammensatte ord med samme slutning (fx \"sommerhus\" til \"hus\")", "set.about": "Om 99RIM",
+      "find.showLabel": "Vis", "find.names": "Navne", "find.same": "Samme ord", "set.about": "Om 99RIM",
       "set.aboutText": "99RIM finder rim ud fra udtale, ikke stavning. Ordbogen har ca. 29.000 almindelige danske ord med udtale fra eSpeak NG. Enkelte udtaler kan være forkerte. AI-sortering ændrer kun rækkefølgen på de rim, appen selv har fundet.",
       "ws.copy": "Kopiér", "ws.save": "Gem i noter", "ws.unsave": "Fjern fra noter", "ws.search": "Find rim på dette ord", "ws.meaning": "Betydning (ordnet.dk)", "ws.close": "Luk",
       "ws.info": (r) => `${r.score} / 100 · ${r.syl} ${r.syl === 1 ? "stavelse" : "stavelser"}`,
@@ -115,7 +115,7 @@
       "book.rhymeLast": "Rhyme the last word", "book.saved": "Saved words", "book.empty": "Tap a rhyme and choose \"Save to notes\" to keep it here.",
       "book.savedAt": "Saved", "book.remove": "Remove",
       "set.title": "Settings", "set.ui": "App language", "set.rhymes": "Rhymes", "set.soon": "soon",
-      "set.same": "Show compounds with the same ending (like \"sommerhus\" for \"hus\")", "set.about": "About 99RIM",
+      "find.showLabel": "Show", "find.names": "Names", "find.same": "Same word", "set.about": "About 99RIM",
       "set.aboutText": "99RIM finds rhymes by sound, not spelling. The dictionary has about 29,000 common Danish words with pronunciations from eSpeak NG. A few pronunciations may be wrong. AI sorting only reorders the rhymes the app found itself.",
       "ws.copy": "Copy", "ws.save": "Save to notes", "ws.unsave": "Remove from notes", "ws.search": "Find rhymes for this word", "ws.meaning": "Meaning (ordnet.dk)", "ws.close": "Close",
       "ws.info": (r) => `${r.score} / 100 · ${r.syl} ${r.syl === 1 ? "syllable" : "syllables"}`,
@@ -204,6 +204,7 @@
     if (!find.res) return [];
     return find.res.results.filter((r) =>
       (state.same || !r.same) &&
+      (state.names || !r.name) &&
       (find.band === "all" || (find.band === "perfect") === perfect(r)) &&
       (!find.syl || (find.syl === 4 ? r.syl >= 4 : r.syl === find.syl)));
   }
@@ -250,7 +251,7 @@
     const target = res.query !== find.input ? `${t("find.target", res.query)} · ` : "";
     const g = res.guessed.length ? ` · ${t("find.guessed", res.guessed.join(", "))}` : "";
     $("meta-ipa").textContent = `${target}/${res.ipa}/ · ${t("find.syl", res.syl)}${g}`;
-    const all = res.results.filter((r) => state.same || !r.same);
+    const all = res.results.filter((r) => (state.same || !r.same) && (state.names || !r.name));
     $("meta-count").textContent = t("find.count", all.length);
     $("meta-def").href = `https://ordnet.dk/ddo/ordbog?query=${encodeURIComponent(res.query.split(" ").pop())}`;
 
@@ -299,7 +300,7 @@
       const r = await fetch(AI.url, {
         method: "POST",
         headers: { "Content-Type": "application/json", apikey: AI.anonKey, Authorization: `Bearer ${AI.anonKey}` },
-        body: JSON.stringify({ text: key, lang: "da", candidates: res.results.filter((x) => !x.same).slice(0, 150).map((x) => x.word) }),
+        body: JSON.stringify({ text: key, lang: "da", candidates: res.results.filter((x) => !x.same && (state.names || !x.name)).slice(0, 150).map((x) => x.word) }),
       });
       if (!r.ok) throw new Error(r.status);
       const data = await r.json();
@@ -401,12 +402,15 @@
   // ---------- Settings ----------
   function renderSettings() {
     $("ui-" + state.ui).checked = true;
-    $("opt-same").checked = state.same;
   }
   document.querySelectorAll('input[name="ui"]').forEach((r) => r.addEventListener("change", () => {
     state.ui = r.value; persist(); applyText(); renderFind(); renderBook();
   }));
-  $("opt-same").addEventListener("change", (e) => { state.same = e.target.checked; persist(); renderFind(); });
+  // Show switches: names and places, and compounds of the same word ("sommerhus" for "hus")
+  $("opt-names").checked = state.names;
+  $("opt-same").checked = state.same;
+  $("opt-names").addEventListener("change", (e) => { state.names = e.target.checked; persist(); find.open.clear(); renderFind(); });
+  $("opt-same").addEventListener("change", (e) => { state.same = e.target.checked; persist(); find.open.clear(); renderFind(); });
 
   // ---------- Start ----------
   applyText();

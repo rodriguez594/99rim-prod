@@ -1,0 +1,113 @@
+# Rhyme test list. One case per line: query <TAB> word <TAB> expectation <TAB> note
+# perfect     word is in the results and counts as a perfect rhyme
+# rhymes      word is in the results (any strength)
+# notperfect  word is not a perfect rhyme (missing, or near only)
+# absent      word must not be in the results at all
+# name        word is in the results and marked as a name
+# notname     word is in the results and not marked as a name
+#
+# Perfect rhymes
+natten	katten	perfect
+natten	hatten	perfect
+natten	skatten	perfect
+hus	bus	perfect
+hus	mus	perfect
+hus	knus	perfect
+hus	plus	perfect
+hjerte	smerte	perfect
+penge	længe	perfect
+penge	senge	perfect
+drømme	strømme	perfect
+drømme	svømme	perfect
+sommer	kommer	perfect
+sommer	dommer	perfect
+tid	hvid	perfect
+tid	strid	perfect
+liv	kniv	perfect
+liv	skriv	perfect
+bror	mor	perfect
+bror	stor	perfect
+bror	tror	perfect
+vej	nej	perfect
+vej	hej	perfect
+mig	dig	perfect
+gade	lade	perfect
+gade	glade	perfect
+skole	stole	perfect
+skole	kjole	perfect
+kold	hold	perfect
+kold	vold	perfect
+fed	ved	perfect
+fed	ned	perfect
+sjov	skov	perfect
+sjov	lov	perfect
+hjem	fem	perfect
+hjem	dem	perfect
+hjem	glem	perfect
+lyset	krydset	perfect
+byen	skyen	perfect
+ordet	sporet	perfect
+ordet	kontoret	perfect
+flex	sex	perfect
+cash	flash	perfect
+para	klara	perfect
+mad	glad	perfect
+mad	bad	perfect
+nat	kat	perfect
+nat	hat	perfect
+by	ny	perfect
+by	fly	perfect
+livet	givet	perfect
+hånden	ånden	perfect
+nu	du	perfect
+smil	stil	perfect
+mand	land	perfect
+mand	vand	perfect
+mand	sand	perfect
+kys	lys	perfect
+ven	igen	perfect
+tro	ro	perfect
+tro	sko	perfect
+far	har	perfect
+far	var	perfect
+os to	konto	rhymes	two-word input
+kærlighed	herlighed	perfect
+kærlighed	færdighed	rhymes
+dag	sag	perfect
+lyst	kyst	rhymes	eSpeak gives these different vowels
+# Stress: an unstressed ending is not a perfect rhyme for a stressed one
+hus	fokus	notperfect	fo-kus is stressed on fo
+hus	status	notperfect
+hus	jesus	notperfect
+hus	virus	notperfect
+hus	kursus	notperfect
+hus	minus	notperfect
+fokus	focus	perfect
+fokus	bus	notperfect
+# Close but not perfect
+natten	gaden	notperfect	d vs soft d
+hjerte	bedste	notperfect
+penge	denne	notperfect
+drømme	grønne	notperfect
+# Junk must never show up
+hjem	km	absent
+hjem	cm	absent
+hjem	mm	absent
+hjem	hmm	absent
+hjem	vm	absent
+flex	htx	absent
+flex	xx	absent
+habibi	iii	absent
+habibi	ii	absent
+# The same word is not a rhyme
+hus	huse	absent
+hus	huset	absent
+natten	nat	absent
+# Names are marked, normal words are not
+hus	rasmus	name
+hus	marcus	name
+mig	nikolaj	name
+natten	manhattan	name
+mig	vej	notname
+skole	sole	notname
+mand	land	notname

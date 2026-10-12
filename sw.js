@@ -1,6 +1,6 @@
 // Offline support: serve from the cache at once, then refresh the cache from the network
 // so the next visit gets the newest app and word list.
-const CACHE = "99rim-v3";
+const CACHE = "99rim-v4";
 const CORE = ["./", "index.html", "styles.css", "app.js", "rhyme.js", "data/da.tsv", "icon.svg", "manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {

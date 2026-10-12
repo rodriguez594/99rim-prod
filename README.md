@@ -6,7 +6,8 @@ Part of 99, same look as 99MS.
 
 - No build step: `index.html`, `styles.css`, `app.js`.
 - `rhyme.js` is the rhyme engine (ported from the old Cadence project). It runs in the browser, so searching is instant and works offline.
-- `data/da.tsv` is the word list: about 29,000 common Danish words with IPA from eSpeak NG and a frequency score. Rebuild it with `python3 tools/build_da.py path/to/cadence/data/dictionary.json`.
+- `data/da.tsv` is the word list: about 28,700 common Danish words with IPA from eSpeak NG, a frequency score, and an `n` flag on names and places. Abbreviations and roman numerals are left out. Rebuild it with `pip install spylls` and `python3 tools/build_da.py path/to/cadence/data/dictionary.json path/to/da_DK` (the Danish Hunspell dictionary from Stavekontrolden.dk, used to spot names).
+- `tests/rhymes.tsv` lists word pairs and what should happen to them. Run `node tools/test_rhymes.js` after any change to the engine or the word list.
 - `sw.js` and `manifest.webmanifest` make it installable on a phone and usable offline.
 - Your saved words and lyrics stay in the browser (localStorage). There is no login yet.
 

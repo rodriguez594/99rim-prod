@@ -76,19 +76,36 @@
     return out;
   }
 
+  // For each rhyme vowel (same order as anchors()), is its syllable stressed?
+  // eSpeak puts ˈ or ˌ before the stressed syllable. A word with no marks at all counts as stressed.
+  function stressOf(ipa) {
+    const marked = String(ipa || "").replace(/[ʔ?ː()\-\s\u200D]/g, "").replace(/aɪ/g, "ɑj").replace(/ε/g, "ɛ");
+    if (!/[ˈˌ]/.test(marked)) return null;
+    const out = [];
+    let pending = false;
+    for (const u of toUnits(marked)) {
+      if (u === "ˈ" || u === "ˌ") pending = true;
+      else if (FULL_VOWELS.has(base(u)) && syllabic(u)) { out.push(pending); pending = false; }
+      else if (VOWELS.has(base(u))) pending = false;
+    }
+    return out;
+  }
+
   // Everything a lookup needs, computed once per word.
   function prepare(ipa) {
     const units = toUnits(cleanIpa(ipa));
     const anc = anchors(units);
-    const tails = [];
+    const st = stressOf(ipa);
+    const tails = [], stressed = [];
     for (let d = 1; d <= 3; d++) {
       const at = anc[anc.length - d];
       if (at == null) break;
       tails.push(units.slice(at).map(base));
+      stressed.push(!st || st.length !== anc.length ? true : st[anc.length - d]);
     }
     const nucleus = anc.length ? base(units[anc[anc.length - 1]]) : null;
     const syl = Math.max(1, units.filter((u) => VOWELS.has(base(u)) && syllabic(u)).length);
-    return { units, tails, nucleus, depthMax: Math.max(1, anc.length), syl };
+    return { units, tails, stressed, nucleus, depthMax: Math.max(1, anc.length), syl };
   }
 
   const FINAL_MIN = 0.4;
@@ -119,6 +136,9 @@
   }
 
   const NUCLEUS_MIN = 0.6;
+  // A rhyme on a stressed syllable against one on an unstressed syllable ("hus" / "fo-kus")
+  // only sounds half right: it can't be perfect.
+  const STRESS_MISMATCH = 0.85;
 
   function scorePair(q, c) {
     if (!q.nucleus || !c.nucleus) return null;
@@ -126,8 +146,9 @@
     const maxD = Math.min(q.tails.length, c.tails.length, 3);
     let best = null;
     for (let d = 1; d <= maxD; d++) {
-      const b = scoreTails(q.tails[d - 1], c.tails[d - 1]);
+      let b = scoreTails(q.tails[d - 1], c.tails[d - 1]);
       if (!b) continue;
+      if (q.stressed[d - 1] !== c.stressed[d - 1]) b *= STRESS_MISMATCH;
       const total = b + (d - 1) * 0.2;
       if (!best || total > best.total) best = { base: b, total, depth: d };
     }
@@ -148,8 +169,8 @@
       this.byWord = new Map();
       for (const line of tsv.split("\n")) {
         if (!line) continue;
-        const [w, ipa, z] = line.split("\t");
-        const e = { w, ipa, z: parseFloat(z), p: prepare(ipa) };
+        const [w, ipa, z, flags = ""] = line.split("\t");
+        const e = { w, ipa, z: parseFloat(z), name: flags.includes("n"), p: prepare(ipa) };
         this.words.push(e);
         this.byWord.set(w, e);
       }
@@ -208,7 +229,7 @@
         // "sommerhus" for "hus" is the same word again: keep it, but below the real rhymes.
         const same = e.w.endsWith(last) || last.endsWith(e.w);
         const sort = (s.total + Math.max(0, (e.z - 3) * 0.008)) * (0.5 + 0.5 * coverage) - (same ? 0.5 : 0);
-        out.push({ word: e.w, score, depth: s.depth, syl: e.p.syl, z: e.z, same, sort });
+        out.push({ word: e.w, score, depth: s.depth, syl: e.p.syl, z: e.z, same, name: e.name, sort });
       }
       out.sort((a, b) => b.sort - a.sort || b.z - a.z);
       return { query: q, ipa: cleanIpa(sound.ipa), syl: qp.syl, guessed: sound.guessed, total: out.length, results: out.slice(0, limit) };

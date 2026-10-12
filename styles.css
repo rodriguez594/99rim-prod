@@ -80,6 +80,15 @@ body {
 .filters { display: grid; gap: 1rem; }
 .filters .seg { max-width: 26rem; }
 .frow { display: grid; gap: 0.55rem; }
+.switches { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; }
+.switch { display: inline-flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; color: var(--dim); }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch .track { position: relative; width: 38px; height: 22px; border-radius: 999px; background: var(--faint); transition: background 0.15s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--dim); transition: transform 0.15s, background 0.15s; }
+.switch input:checked + .track { background: var(--fg); }
+.switch input:checked + .track::after { transform: translateX(16px); background: var(--bg); }
+.switch input:checked ~ span:last-child { color: var(--fg); }
+.switch input:focus-visible + .track { outline: 1px solid var(--fg); outline-offset: 2px; }
 .flabel { font: 500 0.62rem/1 var(--font-ui); letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
