@@ -166,7 +166,6 @@
   const find = { input: "", res: null, band: "all", syl: 0, shown: PAGE, open: new Set(), ai: null, aiFor: "", aiBusy: false };
   const q = $("q");
   const collator = new Intl.Collator("da");
-  let typeT = null;
 
   // A whole line rhymes on its end: the last word, or the last two when the last one is short ("os to").
   function rhymeTarget(text) {
@@ -176,10 +175,10 @@
     return last.length <= 3 ? words.slice(-2).join(" ") : last;
   }
 
-  function search(text, { keep = true } = {}) {
+  // Runs on Enter (or a tap on a recent search), not while typing.
+  function search(text) {
     text = Rim.normalize(text);
-    // While typing, leave the field alone: normalizing would eat the space in "os to".
-    if (keep) q.value = text;
+    q.value = text;
     const url = new URL(location.href);
     text ? url.searchParams.set("q", text) : url.searchParams.delete("q");
     history.replaceState(null, "", url);
@@ -189,9 +188,9 @@
       find.input = text;
       find.res = dict.find(rhymeTarget(text), { limit: 5000 });
       find.syl = 0; find.shown = PAGE; find.open.clear();
-      if (keep) remember(text);
+      remember(text);
       renderFind();
-      if (keep && state.sort === "ai") aiSort();
+      if (state.sort === "ai") aiSort();
     });
   }
 
@@ -320,9 +319,9 @@
     $("recent").innerHTML = state.recent.map((r) => `<button type="button" class="chip word" data-q="${esc(r)}">${esc(r)}</button>`).join("");
   }
 
-  q.addEventListener("input", () => { clearTimeout(typeT); typeT = setTimeout(() => search(q.value, { keep: false }), 160); });
-  $("search-form").addEventListener("submit", (e) => { e.preventDefault(); clearTimeout(typeT); search(q.value); q.blur(); });
-  q.addEventListener("blur", () => remember(Rim.normalize(q.value)));
+  $("search-form").addEventListener("submit", (e) => { e.preventDefault(); search(q.value); q.blur(); });
+  // The field's clear (x) button empties the results too.
+  q.addEventListener("input", () => { if (!q.value) search(""); });
   document.querySelectorAll('input[name="band"]').forEach((r) => r.addEventListener("change", () => { find.band = r.value; find.shown = PAGE; find.open.clear(); renderFind(); }));
   $("syl-chips").addEventListener("click", (e) => { const c = e.target.closest("[data-syl]"); if (c) { find.syl = +c.dataset.syl; find.shown = PAGE; find.open.clear(); renderFind(); } });
   $("sort-chips").addEventListener("click", (e) => {
