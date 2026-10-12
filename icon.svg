@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#1f2124"/>
+  <text x="256" y="268" text-anchor="middle" font-family="Share Tech Mono, ui-monospace, Menlo, Consolas, monospace" font-size="190" fill="#f4f5f6" letter-spacing="6">99</text>
+  <path d="M146 334h220" stroke="#f4f5f6" stroke-width="10" stroke-linecap="round"/>
+  <path d="M186 374h140" stroke="#3a3d42" stroke-width="10" stroke-linecap="round"/>
+</svg>

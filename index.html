@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>99RIM</title>
+<meta name="apple-mobile-web-app-title" content="99RIM">
+<meta name="application-name" content="99RIM">
+<meta name="theme-color" content="#1f2124">
+<meta name="description" content="Find rim på dansk. Perfekte rim, næsten-rim og flerstavelsesrim, fundet ud fra udtalen.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<button class="view-toggle" id="view-toggle" type="button" hidden aria-label="Telefonvisning" title="Telefonvisning">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2"></rect><path d="M11 18.5h2"></path></svg>
+</button>
+<div class="phone-stage" id="phone-stage" hidden></div>
+
+<div class="app" id="app">
+  <nav class="tabbar" id="tabbar" aria-label="Sektioner">
+    <div class="rail-brand" aria-hidden="true">99RIM</div>
+    <button type="button" data-tab="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span data-t="tab.find">Find</span></button>
+    <button type="button" data-tab="book"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v15.5H7.5A1.5 1.5 0 0 1 6 19V3.5z"/><path d="M6 19a1.5 1.5 0 0 1 1.5-1.5h11M10 8h5M10 11.5h5"/></svg><span data-t="tab.book">Noter</span></button>
+    <button type="button" data-tab="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-t="tab.settings">Indstillinger</span></button>
+  </nav>
+
+  <!-- Find: type a word, get rhymes -->
+  <section class="view" id="v-find" hidden>
+    <div class="page wide">
+      <div class="page-head"><div class="brand">99RIM</div></div>
+      <form class="search" id="search-form" role="search">
+        <input type="search" id="q" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-tp="find.placeholder" placeholder="Ord eller linje" aria-label="Ord eller linje">
+      </form>
+      <div class="meta" id="meta" hidden>
+        <span id="meta-ipa"></span>
+        <span id="meta-count"></span>
+        <a class="link" id="meta-def" target="_blank" rel="noopener" data-t="find.meaning">Betydning</a>
+      </div>
+      <div class="filters" id="filters" hidden>
+        <div class="seg" role="radiogroup" aria-label="Styrke">
+          <input type="radio" name="band" id="b-all" value="all" checked><label for="b-all" data-t="band.all">Alle</label>
+          <input type="radio" name="band" id="b-perfect" value="perfect"><label for="b-perfect" data-t="band.perfect">Perfekte</label>
+          <input type="radio" name="band" id="b-near" value="near"><label for="b-near" data-t="band.near">Næsten</label>
+        </div>
+        <div class="frow"><span class="flabel" data-t="find.sylLabel">Stavelser</span><div class="chips" id="syl-chips" role="group" aria-label="Stavelser"></div></div>
+        <div class="frow"><span class="flabel" data-t="find.sortLabel">Sortér</span><div class="chips" id="sort-chips" role="group" aria-label="Sortér">
+          <button type="button" class="chip" data-sort="best" data-t="sort.best">Bedste</button>
+          <button type="button" class="chip" data-sort="syl" data-t="sort.syl">Stavelser</button>
+          <button type="button" class="chip" data-sort="common" data-t="sort.common">Almindelige</button>
+          <button type="button" class="chip" data-sort="abc" data-t="sort.abc">A–Å</button>
+          <button type="button" class="chip" data-sort="ai" data-t="sort.ai" hidden>AI</button>
+        </div></div>
+      </div>
+      <div id="results" class="results" aria-live="polite"></div>
+      <button class="ghost more" id="more" type="button" hidden data-t="find.more">Vis flere</button>
+      <div id="find-empty" class="intro">
+        <p class="hint" data-t="find.intro">Skriv et ord, en vending eller en hel linje, fx "kærlighed" eller "os to". En linje rimer på sit sidste ord. Rimene findes på din telefon ud fra udtalen, så det går hurtigt og virker uden net.</p>
+        <div class="sec" id="recent-wrap" hidden>
+          <h3 class="sec-title" data-t="find.recent">Seneste</h3>
+          <div class="chips" id="recent"></div>
+        </div>
+      </div>
+      <p class="hint" id="loading" data-t="find.loading">Henter ordbogen…</p>
+    </div>
+  </section>
+
+  <!-- Notebook: saved words and a lyrics pad, stored on this device -->
+  <section class="view" id="v-book" hidden>
+    <div class="page">
+      <div class="page-head"><h2 data-t="book.title">Noter</h2><span class="note" id="pad-saved"></span></div>
+      <section class="sec">
+        <h3 class="sec-title" data-t="book.pad">Tekst</h3>
+        <textarea id="pad" class="pad" rows="10" data-tp="book.padPlaceholder" placeholder="Skriv din tekst her. Den gemmes på denne enhed." aria-label="Tekst"></textarea>
+        <div class="row-actions"><button class="ghost" type="button" id="pad-rhyme" data-t="book.rhymeLast">Rim på sidste ord</button></div>
+      </section>
+      <section class="sec">
+        <h3 class="sec-title" data-t="book.saved">Gemte ord</h3>
+        <div id="saved"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="view" id="v-settings" hidden>
+    <div class="page">
+      <div class="page-head"><h2 data-t="set.title">Indstillinger</h2></div>
+      <section class="sec">
+        <h3 class="sec-title" data-t="set.ui">Sprog i appen</h3>
+        <div class="seg" role="radiogroup" aria-label="Sprog">
+          <input type="radio" name="ui" id="ui-da" value="da"><label for="ui-da">Dansk</label>
+          <input type="radio" name="ui" id="ui-en" value="en"><label for="ui-en">English</label>
+        </div>
+      </section>
+      <section class="sec">
+        <h3 class="sec-title" data-t="set.rhymes">Rim</h3>
+        <div class="seg" role="radiogroup" aria-label="Rimsprog">
+          <input type="radio" name="rl" id="rl-da" value="da" checked><label for="rl-da">Dansk</label>
+          <input type="radio" name="rl" id="rl-en" value="en" disabled><label for="rl-en" class="off">English <small data-t="set.soon">snart</small></label>
+        </div>
+        <label class="check"><input type="checkbox" id="opt-same"><span data-t="set.same">Vis sammensatte ord med samme slutning (fx "sommerhus" til "hus")</span></label>
+      </section>
+      <section class="sec">
+        <h3 class="sec-title" data-t="set.about">Om 99RIM</h3>
+        <p class="note" data-t="set.aboutText">99RIM finder rim ud fra udtale, ikke stavning. Ordbogen har ca. 29.000 almindelige danske ord med udtale fra eSpeak NG. Enkelte udtaler kan være forkerte. AI-sortering ændrer kun rækkefølgen på de rim, appen selv har fundet.</p>
+        <p class="note" id="version"></p>
+      </section>
+    </div>
+  </section>
+</div>
+
+<!-- Word actions -->
+<div class="sheet-back" id="word-sheet" hidden>
+  <div class="word-sheet" role="dialog" aria-modal="true" aria-labelledby="ws-word">
+    <div class="ws-head"><b id="ws-word"></b><span class="note" id="ws-info"></span></div>
+    <button class="ws-btn" type="button" data-act="copy" data-t="ws.copy">Kopiér</button>
+    <button class="ws-btn" type="button" data-act="save" id="ws-save" data-t="ws.save">Gem i noter</button>
+    <button class="ws-btn" type="button" data-act="search" data-t="ws.search">Find rim på dette ord</button>
+    <a class="ws-btn" id="ws-def" target="_blank" rel="noopener" data-t="ws.meaning">Betydning (ordnet.dk)</a>
+    <button class="ws-btn dim" type="button" data-act="close" data-t="ws.close">Luk</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<div class="env-badge" id="env-badge" hidden>PROD</div>
+
+<script src="rhyme.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
